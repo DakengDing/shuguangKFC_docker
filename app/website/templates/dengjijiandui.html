@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="col-md-6 offset-md-3">
+    <h1>舰队登记</h1>
+<form method="POST" action="{% url 'dengji' %}">
+	{% csrf_token %}
+    <div class="container">
+  <label for="from" class="form-label">请输入FC角色名：</label>
+  <div class="form-floating mb-3">
+    <input type="text" class="form-control" id="id" name="id">
+    <label for="from">角色</label>
+  </div>
+<div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="spr">
+  <label class="form-check-label" for="flexCheckDefault">
+    极限集结
+  </label>
+</div>
+        <div class="mb-3">
+  <label for="member" class="form-label">舰队构成</label>
+  <textarea class="form-control" id="member" rows="10"></textarea>
+</div>
+    <br/>
+    </div>
+
+
+
+</form>
+    <a href="{% url 'home' %}" class="btn btn-primary ">返回</a>
+<a type="submit" class="btn btn-danger">登记舰队</a>
+</div>
+
+
+{% endblock %}

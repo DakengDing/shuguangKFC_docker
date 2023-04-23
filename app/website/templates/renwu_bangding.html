@@ -1,0 +1,41 @@
+{% extends 'base.html'%}
+
+{% block content %}
+<div class="col-md-6 offset-md-3">
+    {% if user.is_authenticated %}
+<h1>已绑定人物：</h1>
+
+
+
+
+
+
+
+{% if yiBangDing%}
+<div class="row row-cols-1 row-cols-md-2 g-4">
+    {% for renwu in yiBangDing%}
+    <div class="col">
+        <div class="card border-info mb-3" >
+      <h5 class="card-header">{{renwu.name}}</h5>
+      <div class="card-body">
+        <h5 class="card-title">军团：{{renwu.juntuan}}</h5>
+
+
+      </div>
+    </div>
+    </div>
+
+
+
+    {% endfor %}
+</div>
+
+    {% endif %}
+<a href="{% url 'home' %}" class="btn btn-primary ">返回</a>
+<a href="{% url 'addrenwu' %}" class="btn btn-danger">添加人物</a>
+
+{% else %}
+    {% endif %}
+
+
+{% endblock %}

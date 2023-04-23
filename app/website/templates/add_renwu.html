@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+{% if user.is_authenticated %}
+
+<h1>添加人物：</h1>
+<br/>
+
+<form method="POST" action="{% url 'addrenwu' %}">
+    {% csrf_token %}
+
+	<div class="container">
+  <label for="from" class="form-label">请输入游戏角色名：</label>
+  <div class="form-floating mb-3">
+    <input type="text" class="form-control" id="id" name="id">
+    <label for="from">角色</label>
+  </div>
+
+    <br/>
+    </div>
+
+   <a href="{% url 'renwubangding' %}" class="btn btn-secondary">返回</a>
+    <button type="submit" class="btn btn-primary">添加</button>
+
+</form>
+
+{% else %}
+    {% endif %}
+
+{% endblock %}
