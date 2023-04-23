@@ -4,6 +4,7 @@ services:
   django_gunicorn:
     volumes:
       - static:/static
+      - db:/app/db.splite3
     env_file:
       - .env
     build: 
@@ -21,3 +22,4 @@ services:
 
 volumes:
   static:
+  db:
