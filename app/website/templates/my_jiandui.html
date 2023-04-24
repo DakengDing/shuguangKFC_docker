@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% if user_jianduis %}
+    <h1>我的舰队列表</h1>
+    <table class="table table-hover table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>舰队ID</th>
+                <th>指挥官</th>
+                <th>创建时间</th>
+                <th>是否为SPR</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for jiandui in user_jianduis %}
+                <tr>
+                    <td>{{ jiandui.jiandui_id }}</td>
+                    <td>{{ jiandui.fc_name }}</td>
+                    <td>{{ jiandui.timeCreate }}</td>
+                    <td>{% if jiandui.spr %}是{% else %}否{% endif %}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <h1>暂无参加过的舰队</h1>
+{% endif %}
+
+{% endblock %}
