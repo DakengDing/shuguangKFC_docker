@@ -12,23 +12,54 @@
     <label for="from">角色</label>
   </div>
 <div class="form-check">
-  <input class="form-check-input" type="checkbox" value="" id="spr">
+  <input class="form-check-input" type="checkbox" value="" id="spr" name="spr">
   <label class="form-check-label" for="flexCheckDefault">
     极限集结
   </label>
 </div>
         <div class="mb-3">
   <label for="member" class="form-label">舰队构成</label>
-  <textarea class="form-control" id="member" rows="10"></textarea>
+  <textarea class="form-control" id="member" name="member" rows="10"></textarea>
 </div>
     <br/>
     </div>
 
-
+ <a href="{% url 'home' %}" class="btn btn-primary ">返回</a>
+<button type="submit" class="btn btn-primary">添加舰队</button>
 
 </form>
-    <a href="{% url 'home' %}" class="btn btn-primary ">返回</a>
-<a type="submit" class="btn btn-danger">登记舰队</a>
+{% if jiandui_info %}
+    <h2>舰队指挥：{{ jiandui_info.FC }}</h2>
+    <h2>舰队ID：{{ jiandui_info.jiandui_id }}</h2>
+    {% if members %}
+        <table class="table table-hover table-bordered">
+  <thead class="table-dark">
+    <tr>
+      <th scope="col">角色</th>
+      <th scope="col">舰船</th>
+      <th scope="col">舰船类型</th>
+        <th scope="col">位置</th>
+        <th scope="col">舰队职位</th>
+
+    </tr>
+  </thead>
+        <tbody class="table-group-divider">
+        <tr>
+            {% for name,member in members.items %}
+            <td>{{ name }}</td>
+            <td>{{ member.ship }}</td>
+            <td>{{ member.ship_type }}</td>
+            <td>{{ member.location }}</td>
+            <td>{{ member.role }}</td>
+        </tr>
+        {% endfor %}
+
+    {% endif %}
+     </tbody>
+</table>
+
+{% endif %}
+
 </div>
 
 

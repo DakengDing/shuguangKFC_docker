@@ -10,5 +10,6 @@ urlpatterns = [
     path('renwubangding/', views.renwu_record, name='renwubangding'),
     path('add_renwu/',views.add_renwu,name="addrenwu"),
     path('jiandui/',views.add_jiandui,name="dengji"),
+    path('my_jiandui', views.my_chuqin, name='my_jiandui'),
 
 ]

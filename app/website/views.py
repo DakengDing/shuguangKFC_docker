@@ -5,13 +5,17 @@ from .forms import SignUpForm,AddRenwu
 from .route import Route
 import json
 from django.contrib.auth.models import User
-from .models import Renwu,Juntuan
+from .models import Renwu,Juntuan,Jiandui,Fc
 from django.conf.urls.static import static
 from .esi import Esi
+from .trans import Trans
+from django.contrib.auth.decorators import login_required
+from .signals import add_user_fc
 
 
 
 def home(request):
+
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
@@ -19,12 +23,38 @@ def home(request):
         if user is not None:
             login(request, user)
             messages.success(request, "已登录")
-            return redirect('home')
+            return redirect('my_jiandui')
         else:
             messages.success(request, "用户名或密码错误")
             return redirect('home')
     return render(request, 'home.html', {})
 
+
+@login_required(login_url='home')
+def my_chuqin(request):
+    user_name = request.user.username
+    user_id = User.objects.get(username = user_name)
+    game_names = list(Renwu.objects.filter(user_name_id=user_id).values_list('name',flat=True))
+    jiandui_dict = []
+
+
+    for user_name in game_names:
+        info = {}
+
+        info['game_id'] = user_name
+
+        user_jiandui = Jiandui.objects.get(member__has_key = user_name)
+        info['jiandui_id'] = user_jiandui.jiandui_id
+        info['time'] = user_jiandui.timeCreate
+        info['spr'] = user_jiandui.spr
+
+
+        jiandui_dict.append(info)
+
+
+
+
+    return render(request, 'my_jiandui.html', {'user_jianduis':jiandui_dict})
 
 def login_user(request):
     pass
@@ -44,8 +74,18 @@ def register_user(request):
             username = form.cleaned_data['username']
             password = form.cleaned_data['password1']
             user = authenticate(username=username, password=password)
+
             login(request, user)
             messages.success(request, "注册成功")
+
+            user_ins = User.objects.get(username=username)
+            try:
+                fc = Fc.objects.get(user_name=user_ins)
+                fc.fc = False
+                fc.save()
+            except Fc.DoesNotExist:
+                fc = Fc.objects.create(user_name=user_ins, fc=False)
+                fc.save()
             return redirect('home')
     else:
         form = SignUpForm()
@@ -96,13 +136,23 @@ def dao_hang(request):
 
 def add_renwu(request):
     if request.user.is_authenticated:
+        user_name = request.user.username
+        user_id = User.objects.get(username=user_name)
         if request.method =="POST":
             id = request.POST.get('id')
             if Renwu.objects.filter(name = id).exists():
-                messages.success(request, "角色已绑定")
+                if Renwu.objects.get(name = id).user_name_id is None:
+                    renwu = Renwu.objects.get(name = id)
+                    renwu.user_name_id = user_id
+                    renwu.save()
+                    messages.success(request, "添加成功")
+
+                else:
+                    messages.success(request, "角色已被其他用户绑定")
+
                 return render(request, 'add_renwu.html', {})
             else:
-                info = Esi.get_ids(character_names=id)
+                info = Esi.get_ids(character_names=[id])
                 if info is not None:
                     game_id = info[0].id
                     juntuan_id = info[0].corporation_id
@@ -159,5 +209,68 @@ def renwu_record(request):
 def add_jiandui(request):
     if request.user.is_authenticated:
         pk = request.user.id
+        jiandui_dict = {}
+        if request.method =="POST":
+            fcName = request.POST.get('id')
+            if not Renwu.objects.filter(name=fcName).exists():
+
+                messages.success((request,"FC 名字输入有误"))
+                return render(request,'dengjijiandui.html',{})
+            else:
+                text = request.POST.get('member')
+
+                members = Trans.parseFleet(text)
+                # print(members)
+                names = list(members.keys())
+                # print(names)
+                existing_names = Renwu.objects.filter(name__in=names).values_list('name', flat=True)
+                non_existing_names = list(set(names) - set(existing_names))
+                if len(non_existing_names) != 0:
+
+                    res = Esi.get_ids(non_existing_names)
+                    for character in res:
+                        task = Renwu(game_id=character.id, name=character.name, point=0, juntuan_id=character.corporation_id)
+                        task.save()
+
+                for name in names:
+                    player = Renwu.objects.get(name=name)
+                    player.point += 1
+                    player.save()
+
+                fc_name_id = Renwu.objects.get(name=fcName).game_id
+                spr = False
+                if 'spr' in request.POST:
+                    spr =True
+                jiandui = Jiandui(fc_name_id=fc_name_id,spr=spr, member = members)
+                jiandui.save()
+                messages.success(request,'舰队登记成功')
+                jiandui_id = jiandui.jiandui_id
+                jiandui_info = {}
+                jiandui_info['jiandui_id'] = jiandui_id
+                jiandui_info['FC'] = fcName
+                return render(request,'dengjijiandui.html',{'members':members,'jiandui_info':jiandui_info})
+
+
+
+
+            # print(res)
+            # for non_existing_name in non_existing_names:
+            #     info = Esi.get_ids(character_names=non_existing_name)
+            #     if info is not None:
+            #         game_id = info[0].id
+            #         juntuan_id = info[0].corporation_id
+            #
+            #         if Juntuan.objects.filter(juntuan_id=juntuan_id).exists():
+            #             task = Renwu(game_id=game_id, name=non_existing_name, point=0, juntuan_id=juntuan_id,
+            #                          user_name_id=request.user.id)
+            #             task.save()
+            #         else:
+            #             juntuan_task = Juntuan(juntuan_id=juntuan_id, name=info[0].corporation_name)
+            #             juntuan_task.save()
+            #             task = Renwu(game_id=game_id, name=non_existing_name, point=0, juntuan_id=juntuan_id,
+            #                          user_name_id=request.user.id)
+            #             task.save()
+
 
     return render(request,'dengjijiandui.html',{})
+

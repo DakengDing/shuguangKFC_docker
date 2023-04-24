@@ -8,7 +8,7 @@
         <thead class="table-dark">
             <tr>
                 <th>舰队ID</th>
-                <th>指挥官</th>
+                <th>参加角色</th>
                 <th>创建时间</th>
                 <th>是否为SPR</th>
             </tr>
@@ -17,8 +17,8 @@
             {% for jiandui in user_jianduis %}
                 <tr>
                     <td>{{ jiandui.jiandui_id }}</td>
-                    <td>{{ jiandui.fc_name }}</td>
-                    <td>{{ jiandui.timeCreate }}</td>
+                    <td>{{ jiandui.game_id }}</td>
+                    <td>{{ jiandui.time }}</td>
                     <td>{% if jiandui.spr %}是{% else %}否{% endif %}</td>
                 </tr>
             {% endfor %}
