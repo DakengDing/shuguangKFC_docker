@@ -209,46 +209,52 @@ def renwu_record(request):
 def add_jiandui(request):
     if request.user.is_authenticated:
         pk = request.user.id
-        jiandui_dict = {}
-        if request.method =="POST":
-            fcName = request.POST.get('id')
-            if not Renwu.objects.filter(name=fcName).exists():
+        fc_ins = Fc.objects.get(user_name_id = pk)
+        is_fc = fc_ins.fc
+        if is_fc:
+            jiandui_dict = {}
+            if request.method =="POST":
+                fcName = request.POST.get('id')
+                if not Renwu.objects.filter(name=fcName).exists():
 
-                messages.success((request,"FC 名字输入有误"))
-                return render(request,'dengjijiandui.html',{})
+                    messages.success((request,"FC 名字输入有误"))
+                    return render(request,'dengjijiandui.html',{})
+                else:
+                    text = request.POST.get('member')
+
+                    members = Trans.parseFleet(text)
+                    # print(members)
+                    names = list(members.keys())
+                    # print(names)
+                    existing_names = Renwu.objects.filter(name__in=names).values_list('name', flat=True)
+                    non_existing_names = list(set(names) - set(existing_names))
+                    if len(non_existing_names) != 0:
+
+                        res = Esi.get_ids(non_existing_names)
+                        for character in res:
+                            task = Renwu(game_id=character.id, name=character.name, point=0, juntuan_id=character.corporation_id)
+                            task.save()
+
+                    for name in names:
+                        player = Renwu.objects.get(name=name)
+                        player.point += 1
+                        player.save()
+
+                    fc_name_id = Renwu.objects.get(name=fcName).game_id
+                    spr = False
+                    if 'spr' in request.POST:
+                        spr =True
+                    jiandui = Jiandui(fc_name_id=fc_name_id,spr=spr, member = members)
+                    jiandui.save()
+                    messages.success(request,'舰队登记成功')
+                    jiandui_id = jiandui.jiandui_id
+                    jiandui_info = {}
+                    jiandui_info['jiandui_id'] = jiandui_id
+                    jiandui_info['FC'] = fcName
+                    return render(request,'dengjijiandui.html',{'members':members,'jiandui_info':jiandui_info,'is_fc':is_fc})
             else:
-                text = request.POST.get('member')
+                return render(request,'dengjijiandui.html',{'is_fc':is_fc})
 
-                members = Trans.parseFleet(text)
-                # print(members)
-                names = list(members.keys())
-                # print(names)
-                existing_names = Renwu.objects.filter(name__in=names).values_list('name', flat=True)
-                non_existing_names = list(set(names) - set(existing_names))
-                if len(non_existing_names) != 0:
-
-                    res = Esi.get_ids(non_existing_names)
-                    for character in res:
-                        task = Renwu(game_id=character.id, name=character.name, point=0, juntuan_id=character.corporation_id)
-                        task.save()
-
-                for name in names:
-                    player = Renwu.objects.get(name=name)
-                    player.point += 1
-                    player.save()
-
-                fc_name_id = Renwu.objects.get(name=fcName).game_id
-                spr = False
-                if 'spr' in request.POST:
-                    spr =True
-                jiandui = Jiandui(fc_name_id=fc_name_id,spr=spr, member = members)
-                jiandui.save()
-                messages.success(request,'舰队登记成功')
-                jiandui_id = jiandui.jiandui_id
-                jiandui_info = {}
-                jiandui_info['jiandui_id'] = jiandui_id
-                jiandui_info['FC'] = fcName
-                return render(request,'dengjijiandui.html',{'members':members,'jiandui_info':jiandui_info})
 
 
 

@@ -25,7 +25,9 @@
     </div>
 
  <a href="{% url 'home' %}" class="btn btn-primary ">返回</a>
-<button type="submit" class="btn btn-primary">添加舰队</button>
+    {% if is_fc %}
+<button type="submit" class="btn btn-danger">添加舰队</button>
+    {% endif %}
 
 </form>
 {% if jiandui_info %}

@@ -36,6 +36,8 @@ class Fc(models.Model):
     # user_name = models.ForeignKey(User, on_delete=models.PROTECT,primary_key=True)
     user_name = models.OneToOneField(User,on_delete=models.PROTECT, primary_key=True)
     fc = models.BooleanField(default=False)
+    def __str__(self):
+        return self.user_name.username
 
 
 
