@@ -1,10 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="col-md-6 offset-md-3">
+<h1>军团分数统计</h1>
+<table class="table table-hover table-bordered">
+    <thead class="table-dark">
+      <tr>
+        <th>军团</th>
+        <th>分数</th>
+      </tr>
+    </thead>
+    <tbody class="table-group-divider">
+      {% for juntuan in juntuans %}
+        <tr>
+          <td>{{ juntuan.name }}</td>
+          <td>{{ juntuan.score }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

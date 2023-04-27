@@ -11,5 +11,6 @@ urlpatterns = [
     path('add_renwu/',views.add_renwu,name="addrenwu"),
     path('jiandui/',views.add_jiandui,name="dengji"),
     path('my_jiandui', views.my_chuqin, name='my_jiandui'),
+    path('juntuan_scores/', views.juntuan_scores, name='juntuan_scores'),
 
 ]

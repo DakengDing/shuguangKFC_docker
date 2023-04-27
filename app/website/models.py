@@ -22,13 +22,13 @@ class Renwu(models.Model):
 
 class Jiandui(models.Model):
     jiandui_id = models.BigAutoField(primary_key=True)
-    fc_name = models.OneToOneField(Renwu,on_delete=models.PROTECT)
+    fc_name = models.ForeignKey(Renwu,on_delete=models.PROTECT)
     timeCreate = models.DateTimeField(auto_now=True)
     spr = models.BooleanField(blank=False)
     member = models.JSONField()
 
     def __str__(self):
-        return self.timeCreate
+        return str(self.timeCreate)
 
 
 
@@ -38,6 +38,11 @@ class Fc(models.Model):
     fc = models.BooleanField(default=False)
     def __str__(self):
         return self.user_name.username
+    
+
+
+    
+    
 
 
 

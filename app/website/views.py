@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -32,27 +33,27 @@ def home(request):
 
 @login_required(login_url='home')
 def my_chuqin(request):
-    user_name = request.user.username
+    user_name = '茶凉α'
     user_id = User.objects.get(username = user_name)
     game_names = list(Renwu.objects.filter(user_name_id=user_id).values_list('name',flat=True))
     jiandui_dict = []
 
 
     for user_name in game_names:
-        info = {}
+        
+        user_jiandui_queryset = Jiandui.objects.filter(member__has_key=user_name)
+        if user_jiandui_queryset.exists():
 
-        info['game_id'] = user_name
+            user_jiandui_queryset = Jiandui.objects.filter(member__has_key=user_name)
 
-        user_jiandui = Jiandui.objects.get(member__has_key = user_name)
-        info['jiandui_id'] = user_jiandui.jiandui_id
-        info['time'] = user_jiandui.timeCreate
-        info['spr'] = user_jiandui.spr
-
-
-        jiandui_dict.append(info)
-
-
-
+            # user_jianduis = Jiandui.objects.get(member__has_key = user_name)
+            for user_jiandui in user_jiandui_queryset:
+                info = {}
+                info['game_id'] = user_name
+                info['jiandui_id'] = user_jiandui.jiandui_id
+                info['time'] = user_jiandui.timeCreate
+                info['spr'] = user_jiandui.spr
+                jiandui_dict.append(info)
 
     return render(request, 'my_jiandui.html', {'user_jianduis':jiandui_dict})
 
@@ -280,3 +281,6 @@ def add_jiandui(request):
 
     return render(request,'dengjijiandui.html',{})
 
+def juntuan_scores(request):
+    juntuans = Juntuan.objects.annotate(score = Sum('renwu__point')).order_by('-score')
+    return render(request, 'juntuan_scores.html', {'juntuans': juntuans})
