@@ -33,7 +33,7 @@ def home(request):
 
 @login_required(login_url='home')
 def my_chuqin(request):
-    user_name = '茶凉α'
+    user_name = request.user.username
     user_id = User.objects.get(username = user_name)
     game_names = list(Renwu.objects.filter(user_name_id=user_id).values_list('name',flat=True))
     jiandui_dict = []
