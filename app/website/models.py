@@ -12,7 +12,7 @@ class Juntuan(models.Model):
 class Renwu(models.Model):
     game_id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=50)
-    juntuan = models.ForeignKey("Juntuan",on_delete=models.PROTECT)
+    juntuan = models.ForeignKey("Juntuan",on_delete=models.CASCADE)
     point = models.BigIntegerField(null=True,blank=True)
     user_name = models.ForeignKey(User,on_delete=models.PROTECT,null=True,blank=True)
 

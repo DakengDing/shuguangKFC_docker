@@ -49,6 +49,7 @@
       <th scope="col">起点</th>
       <th scope="col">终点</th>
       <th scope="col">距离</th>
+        <th scope="col">燃料</th>
 
     </tr>
   </thead>
@@ -58,6 +59,7 @@
       <td>{{step.from.name}}({{step.from.security}})</td>
       <td>{{step.to.name}}({{step.to.security}})</td>
       <td>{{step.distance}}光年</td>
+     <td>{{step.fuel_cost}}单位</td>
       </tr>
       {% endfor %}
     {% endif %}
@@ -67,7 +69,9 @@
 </table>
 
     </div>
-  <h2>软件计算时默认导航技能为V</h2>
+  <h2>燃料总消耗为{{ total_fuel }}单位</h2>
+  <h2>软件计算时默认校对技能为V</h2>
+  <h2>燃料节约技能为0</h2>
 
 
   </div>

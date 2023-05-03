@@ -1,4 +1,6 @@
-from django.db.models import Sum
+from datetime import datetime
+
+from django.db.models import Sum, Count, Q, OuterRef, Subquery
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -95,7 +97,7 @@ def register_user(request):
 
 
 def dao_hang(request):
-    route_list= None
+    route_list, time, total_fuel = [], 0, 0
     if request.method == 'GET':
         # Get form data
         from_system = request.GET.get('from')
@@ -103,23 +105,13 @@ def dao_hang(request):
         ship_type = request.GET.get('ship')
 
 
-        if ship_type == "Black OP":
-            maxRange = 8
-        elif ship_type == 'Jump Freighters':
-            maxRange = 10
-        elif ship_type == "Jump Gate":
-            maxRange = 5
-        else:
-            maxRange = 7;
+
+
 
         graph_file = open('graph.json', 'r',encoding='utf8')
         graph = json.load(graph_file)
         graph_file.close()
         Route.graph = graph
-
-        # print(graph[0]["security"])
-
-        # print(maxRange)
 
         if from_system is not None and to_system is not None:
             systemFrom = from_system.upper()
@@ -128,11 +120,11 @@ def dao_hang(request):
             systemToNoSpace = systemTo.replace(" ","")
             sysFrom = Route.find_system(systemFromNoSpace)
             sysTo = Route.find_system(systemToNoSpace)
-            route_list = Route.calculate_route(sysFrom,sysTo,maxRange)
+            route_list,total_fuel = Route.calculate_route(sysFrom,sysTo,ship_type)
             if len(route_list) == 0:
                 print("No route found.")
 
-    return render(request,'daohang.html',{"route_list":route_list})
+    return render(request,'daohang.html',{"route_list":route_list,"total_fuel": total_fuel})
 
 
 def add_renwu(request):
@@ -188,13 +180,10 @@ def renwu_record(request):
         pk = request.user.id
         user = User.objects.get(id=pk)
         yiBangDing = user.renwu_set.all()
-        #juntuan = Juntuan.objects.get(juntuan_id = yiBangDing.juntuan_id)
-        #print(yiBangDing[0].juntuan_id)
-        #record = {'name':yiBangDing.name,'juntuan':juntuan.name}
+
         renwu_dict = []
         for renwu in yiBangDing:
             juntuan_name = Juntuan.objects.get(juntuan_id = renwu.juntuan_id).name
-            #alliance = Juntuan.objects.get(juntuan_id = renwu.juntuan_id).alliance
             renwu_dict.append({
                 "name":renwu.name,"juntuan":juntuan_name
             })
@@ -224,9 +213,9 @@ def add_jiandui(request):
                     text = request.POST.get('member')
 
                     members = Trans.parseFleet(text)
-                    # print(members)
+
                     names = list(members.keys())
-                    # print(names)
+
                     existing_names = Renwu.objects.filter(name__in=names).values_list('name', flat=True)
                     non_existing_names = list(set(names) - set(existing_names))
                     if len(non_existing_names) != 0:
@@ -255,32 +244,23 @@ def add_jiandui(request):
                     return render(request,'dengjijiandui.html',{'members':members,'jiandui_info':jiandui_info,'is_fc':is_fc})
             else:
                 return render(request,'dengjijiandui.html',{'is_fc':is_fc})
-
-
-
-
-
-            # print(res)
-            # for non_existing_name in non_existing_names:
-            #     info = Esi.get_ids(character_names=non_existing_name)
-            #     if info is not None:
-            #         game_id = info[0].id
-            #         juntuan_id = info[0].corporation_id
-            #
-            #         if Juntuan.objects.filter(juntuan_id=juntuan_id).exists():
-            #             task = Renwu(game_id=game_id, name=non_existing_name, point=0, juntuan_id=juntuan_id,
-            #                          user_name_id=request.user.id)
-            #             task.save()
-            #         else:
-            #             juntuan_task = Juntuan(juntuan_id=juntuan_id, name=info[0].corporation_name)
-            #             juntuan_task.save()
-            #             task = Renwu(game_id=game_id, name=non_existing_name, point=0, juntuan_id=juntuan_id,
-            #                          user_name_id=request.user.id)
-            #             task.save()
-
-
     return render(request,'dengjijiandui.html',{})
 
 def juntuan_scores(request):
-    juntuans = Juntuan.objects.annotate(score = Sum('renwu__point')).order_by('-score')
+    juntuans_to_exclude = ['高卧东山一片云','猫猫虫收割者','怪物猎人']
+    juntuans = Juntuan.objects.exclude(name__in=juntuans_to_exclude).annotate(score = Sum('renwu__point')).order_by('-score')
+    print(juntuans)
+
     return render(request, 'juntuan_scores.html', {'juntuans': juntuans})
+# def juntuan_scores(request):
+#     current_month = datetime.now().month
+#     current_year = datetime.now().year
+#
+#     renwu_jiandui_count = Renwu.objects.filter(
+#         jiandui__timeCreate__month=current_month,
+#         jiandui__timeCreate__year=current_year,
+#     ).annotate(
+#         jiandui_count=Count("jiandui")
+#     ).select_related("juntuan")
+#
+#     return render(request, "juntuan_scores.html", {"renwu_jiandui_count": renwu_jiandui_count})
