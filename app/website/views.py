@@ -1,3 +1,4 @@
+import calendar
 from datetime import datetime
 
 from django.db.models import Sum, Count, Q, OuterRef, Subquery
@@ -14,6 +15,7 @@ from .esi import Esi
 from .trans import Trans
 from django.contrib.auth.decorators import login_required
 from .signals import add_user_fc
+from datetime import date,datetime
 
 
 
@@ -253,21 +255,32 @@ def add_jiandui(request):
 #
 #     return render(request, 'juntuan_scores.html', {'juntuans': juntuans})
 def juntuan_scores(request):
+    if request.method == 'POST':
+        selected_month = request.POST.get('month')
+        selected_month = datetime.strptime(selected_month, '%Y-%m')
+    else:
+        selected_month = date.today()
+
+    first_day_of_month = selected_month.replace(day=1)
+    last_day_of_month = selected_month.replace(day=calendar.monthrange(selected_month.year, selected_month.month)[1])
+
     # 获取所有军团
     juntuans = Juntuan.objects.all()
+
 
     # 初始化结果字典
     fleet_summary = {}
 
     for juntuan in juntuans:
         # 获取当前军团的所有角色（成员）
+
         members = Renwu.objects.filter(juntuan=juntuan)
 
         # 初始化军团成员参加舰队的次数
         fleet_count = 0
 
         # 查询当月的所有舰队
-        fleets = Jiandui.objects.all()
+        fleets = Jiandui.objects.filter(timeCreate__range=(first_day_of_month, last_day_of_month))
 
         # 遍历所有舰队，检查舰队的成员是否包含当前军团的成员
         for fleet in fleets:

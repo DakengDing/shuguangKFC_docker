@@ -2,6 +2,14 @@
 
 <div class="col-md-6 offset-md-3">
   <h1>军团分数统计</h1>
+<form method="POST">
+  {% csrf_token %}
+  <div class="form-group">
+    <label for="month">选择月份：</label>
+    <input type="month" class="form-control" name="month" id="month" required>
+  </div>
+  <button type="submit" class="btn btn-primary">查询</button>
+</form>
   <table class="table table-hover table-bordered">
     <thead class="table-dark">
       <tr>
