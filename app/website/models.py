@@ -38,11 +38,3 @@ class Fc(models.Model):
     fc = models.BooleanField(default=False)
     def __str__(self):
         return self.user_name.username
-    
-
-
-    
-    
-
-
-

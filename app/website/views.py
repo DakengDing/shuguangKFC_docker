@@ -246,21 +246,48 @@ def add_jiandui(request):
                 return render(request,'dengjijiandui.html',{'is_fc':is_fc})
     return render(request,'dengjijiandui.html',{})
 
-def juntuan_scores(request):
-    juntuans_to_exclude = ['高卧东山一片云','猫猫虫收割者','怪物猎人']
-    juntuans = Juntuan.objects.exclude(name__in=juntuans_to_exclude).annotate(score = Sum('renwu__point')).order_by('-score')
-    print(juntuans)
-
-    return render(request, 'juntuan_scores.html', {'juntuans': juntuans})
 # def juntuan_scores(request):
-#     current_month = datetime.now().month
-#     current_year = datetime.now().year
+#     juntuans_to_exclude = ['高卧东山一片云','猫猫虫收割者','怪物猎人']
+#     juntuans = Juntuan.objects.exclude(name__in=juntuans_to_exclude).annotate(score = Sum('renwu__point')).order_by('-score')
+#     print(juntuans)
 #
-#     renwu_jiandui_count = Renwu.objects.filter(
-#         jiandui__timeCreate__month=current_month,
-#         jiandui__timeCreate__year=current_year,
-#     ).annotate(
-#         jiandui_count=Count("jiandui")
-#     ).select_related("juntuan")
-#
-#     return render(request, "juntuan_scores.html", {"renwu_jiandui_count": renwu_jiandui_count})
+#     return render(request, 'juntuan_scores.html', {'juntuans': juntuans})
+def juntuan_scores(request):
+    # 获取所有军团
+    juntuans = Juntuan.objects.all()
+
+    # 初始化结果字典
+    fleet_summary = {}
+
+    for juntuan in juntuans:
+        # 获取当前军团的所有角色（成员）
+        members = Renwu.objects.filter(juntuan=juntuan)
+
+        # 初始化军团成员参加舰队的次数
+        fleet_count = 0
+
+        # 查询当月的所有舰队
+        fleets = Jiandui.objects.all()
+
+        # 遍历所有舰队，检查舰队的成员是否包含当前军团的成员
+        for fleet in fleets:
+            # 获取舰队成员列表
+            fleet_members = fleet.member
+            # print(fleet_members)
+
+            # 检查舰队成员是否包含当前军团的成员
+            for member in members:
+                if str(member.name) in fleet_members:
+                    fleet_count += 1
+
+        # 如果参加舰队数量大于0，则将结果添加到字典中
+        if fleet_count > 0:
+            fleet_summary[juntuan.name] = fleet_count
+
+    fleet_summary = {k: v for k, v in sorted(fleet_summary.items(), key=lambda item: item[1], reverse=True)}
+    juntuans = []
+    for name, score in fleet_summary.items():
+        juntuans.append({'name': name, 'score': score})
+
+
+    return render(request, "juntuan_scores.html", {"juntuans": juntuans})
