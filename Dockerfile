@@ -5,6 +5,7 @@ RUN pip install --upgrade pip
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 RUN pip install gunicorn
+RUN pip install whitenoise
 
 COPY ./app /app
 
